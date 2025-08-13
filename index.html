@@ -1,0 +1,523 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Strength Checker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .input-group {
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        input[type="password"], input[type="text"] {
+            width: 100%;
+            padding: 15px 50px 15px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #ff6b6b;
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+        }
+
+        .toggle-btn {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            font-size: 18px;
+            padding: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .toggle-btn:hover {
+            color: #ff6b6b;
+        }
+
+        .check-btn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+        }
+
+        .check-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+        }
+
+        .results {
+            text-align: left;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .strength-bar {
+            width: 100%;
+            height: 10px;
+            background: #e1e5e9;
+            border-radius: 5px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .strength-fill {
+            height: 100%;
+            border-radius: 5px;
+            transition: all 0.5s ease;
+            width: 0%;
+        }
+
+        .strength-bad { background: #dc3545; width: 25%; }
+        .strength-intermediate { background: #ffc107; width: 50%; }
+        .strength-strong { background: #28a745; width: 75%; }
+        .strength-strongest { background: linear-gradient(45deg, #28a745, #20c997, #17a2b8); width: 100%; animation: shimmer 2s infinite; }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .character-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .stat-label {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+
+        .remark {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .remark-bad { background: #f8d7da; color: #721c24; }
+        .remark-intermediate { background: #fff3cd; color: #856404; }
+        .remark-strong { background: #d4edda; color: #155724; }
+        .remark-strongest { 
+            background: linear-gradient(45deg, #d4edda, #d1ecf1); 
+            color: #0c5460; 
+            border: 2px solid #28a745; 
+            font-weight: bold;
+            animation: glow 2s infinite alternate;
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 5px rgba(40, 167, 69, 0.5); }
+            to { box-shadow: 0 0 20px rgba(40, 167, 69, 0.8); }
+        }
+
+        .bonus-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .bonus-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .bonus-item {
+            margin: 5px 0;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .clear-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .clear-btn:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 <span class="gradient-text">Password Checker</span></h1>
+        <p style="color: #666; margin-bottom: 20px;">Enter your password to check its strength and security level</p>
+        
+        <div style="background: #fff3cd; border: 2px solid #ffeaa7; border-radius: 10px; padding: 15px; margin-bottom: 20px; text-align: left;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center;">
+                    <span style="font-size: 20px; margin-right: 10px;">⚠️</span>
+                    <strong style="color: #856404;">Security Tip</strong>
+                </div>
+                <button id="hintBtn" onclick="toggleHint()" style="background: none; border: none; cursor: pointer; font-size: 18px; color: #856404;">ℹ️</button>
+            </div>
+            <div id="hintContent" style="display: none; margin-top: 10px; color: #856404; line-height: 1.5;">
+                <strong>Don't use your real password!</strong> For security, create a test password with the same characteristics:
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>Same length as your real password</li>
+                    <li>Same number of uppercase/lowercase letters</li>
+                    <li>Same number of digits and special characters</li>
+                    <li>Similar complexity but different content</li>
+                </ul>
+                <em>Example: If your password is "MySecret123!", try "TestWord456@"</em>
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <input type="password" id="passwordInput" placeholder="Enter your password here..." maxlength="128">
+            <button class="toggle-btn" onclick="togglePassword()" title="Show/Hide Password">👁️</button>
+        </div>
+        
+        <button class="check-btn" onclick="checkPassword()">Check Password Strength</button>
+        <button class="clear-btn" onclick="clearResults()">Clear</button>
+        
+        <div id="results" class="results">
+            <div class="strength-bar">
+                <div id="strengthFill" class="strength-fill"></div>
+            </div>
+            
+            <div class="character-stats">
+                <div class="stat-item">
+                    <div class="stat-label">Password Length</div>
+                    <div id="passwordLength" class="stat-value">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Lowercase Letters</div>
+                    <div id="lowercase" class="stat-value">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Uppercase Letters</div>
+                    <div id="uppercase" class="stat-value">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Numbers</div>
+                    <div id="numbers" class="stat-value">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Whitespace</div>
+                    <div id="whitespace" class="stat-value">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Special Characters</div>
+                    <div id="special" class="stat-value">0</div>
+                </div>
+            </div>
+            
+            <div class="stat-item" style="text-align: center; margin: 20px 0;">
+                <div class="stat-label">Overall Strength Score</div>
+                <div id="strengthScore" class="stat-value">0/9</div>
+                <div style="margin-top: 5px; font-weight: 600; color: #333;">
+                    Category: <span id="strengthCategory" style="color: #ff6b6b;">Unknown</span>
+                </div>
+            </div>
+            
+            <div class="bonus-section">
+                <div class="bonus-title">🎯 Bonus Points Status</div>
+                <div id="lengthBonus" class="bonus-item">❌ Length ≤ 8 (no bonus)</div>
+                <div id="optimalBonus" class="bonus-item">❌ Not in optimal range 12-16 (no bonus)</div>
+                <div id="upperBonus" class="bonus-item">❌ Less than 3 uppercase letters (no bonus)</div>
+                <div id="specialBonus" class="bonus-item">❌ Less than 3 special characters (no bonus)</div>
+            </div>
+            
+            <div id="remark" class="remark"></div>
+        </div>
+    </div>
+
+    <script>
+        function checkPassword() {
+            const password = document.getElementById('passwordInput').value;
+            
+            if (password.length === 0) {
+                alert('Please enter a password to check!');
+                return;
+            }
+            
+            let strength = 0;
+            let lowerCount = 0, upperCount = 0, numCount = 0, wspaceCount = 0, specialCount = 0;
+            const passwordLength = password.length;
+            
+            // Count character types
+            for (let char of password) {
+                if (char >= 'a' && char <= 'z') {
+                    lowerCount++;
+                } else if (char >= 'A' && char <= 'Z') {
+                    upperCount++;
+                } else if (char >= '0' && char <= '9') {
+                    numCount++;
+                } else if (char === ' ') {
+                    wspaceCount++;
+                } else {
+                    specialCount++;
+                }
+            }
+            
+            // Basic character type scoring (original system)
+            if (lowerCount >= 1) strength++;
+            if (upperCount >= 1) strength++;
+            if (numCount >= 1) strength++;
+            if (wspaceCount >= 1) strength++;
+            if (specialCount >= 1) strength++;
+            
+            // Enhanced scoring system
+            // Length bonus points
+            if (passwordLength > 8) strength++;
+            if (passwordLength >= 12) strength++;
+            
+            // Character quantity bonus points
+            if (upperCount >= 3) strength++;
+            if (specialCount >= 3) strength++;
+            
+            // Update display
+            document.getElementById('lowercase').textContent = lowerCount;
+            document.getElementById('uppercase').textContent = upperCount;
+            document.getElementById('numbers').textContent = numCount;
+            document.getElementById('whitespace').textContent = wspaceCount;
+            document.getElementById('special').textContent = specialCount;
+            document.getElementById('passwordLength').textContent = passwordLength;
+            document.getElementById('strengthScore').textContent = ${strength}/9;
+            
+            // Update strength bar
+            const strengthFill = document.getElementById('strengthFill');
+            let strengthClass = '';
+            let strengthCategory = '';
+            
+            if (strength <= 3) {
+                strengthClass = 'strength-bad';
+                strengthCategory = 'Bad';
+            } else if (strength <= 6) {
+                strengthClass = 'strength-intermediate';
+                strengthCategory = 'Intermediate';
+            } else if (strength <= 8) {
+                strengthClass = 'strength-strong';
+                strengthCategory = 'Strong';
+            } else {
+                strengthClass = 'strength-strongest';
+                strengthCategory = 'Strongest';
+            }
+            
+            strengthFill.className = strength-fill ${strengthClass};
+            document.getElementById('strengthCategory').textContent = strengthCategory;
+            
+            // Set remark based on new scoring system
+            const remarkDiv = document.getElementById('remark');
+            let remark = '';
+            let remarkClass = '';
+            
+            if (strength <= 3) {
+                remark = "Bad Password! This is vulnerable to attacks. Add more character types and length.";
+                remarkClass = 'remark-bad';
+            } else if (strength <= 6) {
+                remark = "Intermediate Password. Good start, but could be stronger with more complexity.";
+                remarkClass = 'remark-intermediate';
+            } else if (strength <= 8) {
+                remark = "Strong Password! This provides excellent security protection.";
+                remarkClass = 'remark-strong';
+            } else {
+                remark = "Strongest Password! Maximum security achieved - this is virtually unbreakable!";
+                remarkClass = 'remark-strongest';
+            }
+            
+            remarkDiv.textContent = remark;
+            remarkDiv.className = remark ${remarkClass};
+            
+            // Update bonus indicators
+            updateBonusIndicators(passwordLength, upperCount, specialCount);
+            
+            // Show results
+            document.getElementById('results').style.display = 'block';
+        }
+        
+        function updateBonusIndicators(length, upperCount, specialCount) {
+            // Length bonus
+            const lengthBonus = document.getElementById('lengthBonus');
+            if (length > 8) {
+                lengthBonus.textContent = '✅ Length > 8 (+1 point)';
+                lengthBonus.style.color = '#28a745';
+            } else {
+                lengthBonus.textContent = '❌ Length ≤ 8 (no bonus)';
+                lengthBonus.style.color = '#dc3545';
+            }
+            
+            // Optimal length bonus
+            const optimalBonus = document.getElementById('optimalBonus');
+            if (length >= 12 && length <= 16) {
+                optimalBonus.textContent = '✅ Optimal length 12-16 (+1 point)';
+                optimalBonus.style.color = '#28a745';
+            } else {
+                optimalBonus.textContent = '❌ Not in optimal range 12-16 (no bonus)';
+                optimalBonus.style.color = '#dc3545';
+            }
+            
+            // Uppercase bonus
+            const upperBonus = document.getElementById('upperBonus');
+            if (upperCount >= 3) {
+                upperBonus.textContent = '✅ 3+ uppercase letters (+1 point)';
+                upperBonus.style.color = '#28a745';
+            } else {
+                upperBonus.textContent = '❌ Less than 3 uppercase letters (no bonus)';
+                upperBonus.style.color = '#dc3545';
+            }
+            
+            // Special characters bonus
+            const specialBonus = document.getElementById('specialBonus');
+            if (specialCount >= 3) {
+                specialBonus.textContent = '✅ 3+ special characters (+1 point)';
+                specialBonus.style.color = '#28a745';
+            } else {
+                specialBonus.textContent = '❌ Less than 3 special characters (no bonus)';
+                specialBonus.style.color = '#dc3545';
+            }
+        }
+        
+        function togglePassword() {
+            const passwordInput = document.getElementById('passwordInput');
+            const toggleBtn = document.querySelector('.toggle-btn');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleBtn.textContent = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                toggleBtn.textContent = '👁️';
+            }
+        }
+        
+        function clearResults() {
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('passwordInput').type = 'password';
+            document.querySelector('.toggle-btn').textContent = '👁️';
+        }
+        
+        // Allow Enter key to trigger password check
+        document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkPassword();
+            }
+        });
+        
+        // Real-time checking as user types
+        document.getElementById('passwordInput').addEventListener('input', function() {
+            if (this.value.length > 0) {
+                checkPassword();
+            } else {
+                document.getElementById('results').style.display = 'none';
+            }
+        });
+        
+        function toggleHint() {
+            const hintContent = document.getElementById('hintContent');
+            const hintBtn = document.getElementById('hintBtn');
+            
+            if (hintContent.style.display === 'none') {
+                hintContent.style.display = 'block';
+                hintBtn.textContent = '❌';
+                hintBtn.title = 'Hide security tip';
+            } else {
+                hintContent.style.display = 'none';
+                hintBtn.textContent = 'ℹ️';
+                hintBtn.title = 'Show security tip';
+            }
+        }
+    </script>
+</body>
+</html>
