@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -140,7 +141,12 @@
         .strength-bad { background: #dc3545; width: 25%; }
         .strength-intermediate { background: #ffc107; width: 50%; }
         .strength-strong { background: #28a745; width: 75%; }
-        .strength-strongest { background: linear-gradient(45deg, #28a745, #20c997, #17a2b8); width: 100%; animation: shimmer 2s infinite; }
+        .strength-strongest { 
+            background: linear-gradient(45deg, #28a745, #20c997, #17a2b8); 
+            width: 100%; 
+            background-size: 200% 200%;
+            animation: shimmer 2s infinite;
+        }
 
         @keyframes shimmer {
             0% { background-position: -200% 0; }
@@ -360,7 +366,7 @@
             // Enhanced scoring system
             // Length bonus points
             if (passwordLength > 8) strength++;
-            if (passwordLength >= 12) strength++;
+            if (passwordLength >= 12 && passwordLength <= 16) strength++;
             
             // Character quantity bonus points
             if (upperCount >= 3) strength++;
@@ -373,7 +379,7 @@
             document.getElementById('whitespace').textContent = wspaceCount;
             document.getElementById('special').textContent = specialCount;
             document.getElementById('passwordLength').textContent = passwordLength;
-            document.getElementById('strengthScore').textContent = ${strength}/9;
+            document.getElementById('strengthScore').textContent = `${strength}/9`;
             
             // Update strength bar
             const strengthFill = document.getElementById('strengthFill');
@@ -394,7 +400,7 @@
                 strengthCategory = 'Strongest';
             }
             
-            strengthFill.className = strength-fill ${strengthClass};
+            strengthFill.className = `strength-fill ${strengthClass}`;
             document.getElementById('strengthCategory').textContent = strengthCategory;
             
             // Set remark based on new scoring system
@@ -417,7 +423,7 @@
             }
             
             remarkDiv.textContent = remark;
-            remarkDiv.className = remark ${remarkClass};
+            remarkDiv.className = `remark ${remarkClass}`;
             
             // Update bonus indicators
             updateBonusIndicators(passwordLength, upperCount, specialCount);
