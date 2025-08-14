@@ -269,7 +269,7 @@
         </div>
         
         <div class="input-group">
-            <input type="password" id="passwordInput" placeholder="Enter your password here..." maxlength="128">
+            <input type="password" id="passwordInput" placeholder="Enter your password here..." maxlength="32">
             <button class="toggle-btn" onclick="togglePassword()" title="Show/Hide Password">👁️</button>
         </div>
         
@@ -319,7 +319,7 @@
             <div class="bonus-section">
                 <div class="bonus-title">🎯 Bonus Points Status</div>
                 <div id="lengthBonus" class="bonus-item">❌ Length ≤ 8 (no bonus)</div>
-                <div id="optimalBonus" class="bonus-item">❌ Not in optimal range 12-16 (no bonus)</div>
+                <div id="optimalBonus" class="bonus-item">❌ Not in optimal length => 12 (no bonus)</div>
                 <div id="upperBonus" class="bonus-item">❌ Less than 3 uppercase letters (no bonus)</div>
                 <div id="specialBonus" class="bonus-item">❌ Less than 3 special characters (no bonus)</div>
             </div>
@@ -366,7 +366,7 @@
             // Enhanced scoring system
             // Length bonus points
             if (passwordLength > 8) strength++;
-            if (passwordLength >= 12 && passwordLength <= 16) strength++;
+            if (passwordLength >= 12) strength++;
             
             // Character quantity bonus points
             if (upperCount >= 3) strength++;
@@ -445,11 +445,11 @@
             
             // Optimal length bonus
             const optimalBonus = document.getElementById('optimalBonus');
-            if (length >= 12 && length <= 16) {
-                optimalBonus.textContent = '✅ Optimal length 12-16 (+1 point)';
+            if (length >= 12) {
+                optimalBonus.textContent = '✅ Optimal length => 12 (+1 point)';
                 optimalBonus.style.color = '#28a745';
             } else {
-                optimalBonus.textContent = '❌ Not in optimal range 12-16 (no bonus)';
+                optimalBonus.textContent = '❌ Not in optimal range => 12 (no bonus)';
                 optimalBonus.style.color = '#dc3545';
             }
             
